@@ -11,8 +11,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 
-class MainViewModel(private var gitRepository: GitRepository) : ViewModel() {
+class MainViewModel @Inject constructor(private var gitRepository: GitRepository) : ViewModel() {
     val TAG = MainViewModel::class.java.simpleName
     var isLoading = ObservableField<Boolean>(false)
     var repositories = MutableLiveData<ArrayList<Repository>>()
