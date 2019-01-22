@@ -1,4 +1,4 @@
-package com.kshitijpatil.kotlinarchitect.ui.models
+package com.kshitijpatil.kotlinarchitect.data.model
 
 class Repository(
     var repositoryName: String,

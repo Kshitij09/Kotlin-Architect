@@ -9,13 +9,13 @@
 
         <variable
             name="repository"
-            type="com.kshitijpatil.kotlinarchitect.ui.models.Repository" />
+            type="com.kshitijpatil.kotlinarchitect.data.model.Repository" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".MainActivity">
+        android:layout_height="wrap_content"
+        tools:context=".ui.main.MainActivity">
 
         <TextView
             android:id="@+id/tv_repository_name"
