@@ -1,35 +1,50 @@
 package com.kshitijpatil.kotlinarchitect.ui.main
 
+import android.app.Application
+import android.util.Log
 import androidx.databinding.ObservableField
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.kshitijpatil.kotlinarchitect.data.RepoModel
+import com.kshitijpatil.kotlinarchitect.data.GitRepository
 import com.kshitijpatil.kotlinarchitect.data.model.Repository
+import com.kshitijpatil.kotlinarchitect.utils.NetManager
+import com.kshitijpatil.kotlinarchitect.utils.plusAssign
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.observers.DisposableObserver
+import io.reactivex.schedulers.Schedulers
 
-class MainViewModel : ViewModel() {
-    var repoModel = RepoModel()
-    val text = ObservableField<String>("old data")
+class MainViewModel(application: Application) : AndroidViewModel(application) {
+    val TAG = MainViewModel::class.java.simpleName
+    var gitRepository = GitRepository(NetManager(getApplication()))
     var isLoading = ObservableField<Boolean>(false)
     var repositories = MutableLiveData<ArrayList<Repository>>()
-
-    fun refresh() {
-        isLoading.set(true)
-        repoModel.refreshData(object : RepoModel.OnDataReadyCallback {
-            override fun onDataReady(data: String) {
-                isLoading.set(false)
-                text.set(data)
-            }
-        })
-    }
+    private val compositeDisposable = CompositeDisposable()
 
     fun loadRepositories() {
         isLoading.set(true)
-        repoModel.getRepositories(object : RepoModel.OnRepositoryReadyCallback {
-            override fun onRepositoryReady(data: ArrayList<Repository>) {
-                isLoading.set(false)
-                repositories.value = data
-            }
+        compositeDisposable += gitRepository
+            .getRepositories()
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeWith(object : DisposableObserver<ArrayList<Repository>>() {
+                override fun onComplete() {
+                    isLoading.set(false)
+                }
 
-        })
+                override fun onNext(data: ArrayList<Repository>) {
+                    repositories.value = data
+                }
+
+                override fun onError(e: Throwable) {
+                    Log.d(TAG, "Error fetching data")
+                }
+            })
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (!compositeDisposable.isDisposed)
+            compositeDisposable.dispose()
     }
 }
